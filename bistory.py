@@ -30,7 +30,7 @@ from prompt_toolkit.filters import has_focus
 from prompt_toolkit.key_binding import KeyBindings
 
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 class HistoryCompleter(Completer):
