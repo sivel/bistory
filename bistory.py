@@ -25,6 +25,10 @@ import termios
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.enums import DEFAULT_BUFFER
+from prompt_toolkit.filters import has_focus
+from prompt_toolkit.key_binding import KeyBindings
+
 
 __version__ = '1.0.0'
 
@@ -65,7 +69,20 @@ class HistoryCompleter(Completer):
 
 
 def main():
-    session = PromptSession(wrap_lines=False, completer=HistoryCompleter())
+    key_bindings = KeyBindings()
+    default_focused = has_focus(DEFAULT_BUFFER)
+
+    # Autocomplete with backspace
+    @key_bindings.add('backspace', filter=default_focused)
+    def _(event):
+        event.current_buffer.delete_before_cursor()
+        event.current_buffer.insert_text('')
+
+    session = PromptSession(
+        wrap_lines=False,
+        completer=HistoryCompleter(),
+        key_bindings=key_bindings,
+    )
     text = '%s\n' % session.prompt('> ')
     if text.strip():
         for c in text:
