@@ -31,16 +31,26 @@ __version__ = '1.0.0'
 
 class HistoryCompleter(Completer):
     def __init__(self):
-        hist_file = os.getenv('HISTFILE', '~/.bash_history')
+        self._hist_file = os.getenv('HISTFILE', '~/.bash_history')
 
-        with open(os.path.expanduser(hist_file), 'rb') as f:
-            self._history = b''.join(l for l in f.readlines()[::-1])
+        self._history = None
+
+    @property
+    def history(self):
+        if self._history:
+            return self._history
+
+        with open(os.path.expanduser(self._hist_file), 'rb') as f:
+            self._history = b''.join(l for l in f.readlines()[::-1]
+                                     if not l.startswith(b'#'))
+
+        return self._history
 
     def _search(self, text):
         line = '.*'.join(re.escape(w) for w in text.split())
         _text = b'^(?<!#)(.*)(%s)(.*)$' % line.encode()
 
-        matches = re.finditer(_text, self._history, flags=re.I | re.M)
+        matches = re.finditer(_text, self.history, flags=re.I | re.M)
         for _ in range(25):
             match = next(matches)
             yield match.group().decode()
