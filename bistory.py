@@ -52,8 +52,12 @@ class HistoryCompleter(Completer):
 
         matches = re.finditer(_text, self.history, flags=re.I | re.M)
         for _ in range(25):
-            match = next(matches)
-            yield match.group().decode()
+            try:
+                match = next(matches)
+            except StopIteration:
+                break
+            else:
+                yield match.group().decode()
 
     def get_completions(self, document, complete_event):
         for match in self._search(document.text):
